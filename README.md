@@ -40,11 +40,11 @@ public function findBy(array $where = array(), array $orderBy = array(), $limit 
     $builder = OrderBy::orderBy($where);
 
     $builder->setMaxResults(Limit::enforce($limit)); // will never be more than 1000
-    // $builder->setMaxResults(Limit::enforce($limit, Limit::NO_LIMIT)); // will eventually be more than 1000, depends on input
-    $builder->setFirstResult(Offset::offset($limit)); // doesn't do a lot, just for style and integer conversion
+    // $builder->setMaxResults(Limit::enforce($limit, Limit::NO_LIMIT)); // could eventually be more than 1000
+    $builder->setFirstResult(Offset::offset($limit)); // doesn't do a lot, just for integer conversion
 
     $collection = $builder->getQuery()->getResult(); // standard symfony common saying
-
+    
     // now lets say i want the collection indexed by id (for any other further usage)
     $collection = IndexedCollection::indexBy($collection, '[id]'); // nb: would also work with pure arrays
 
