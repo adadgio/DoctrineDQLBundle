@@ -1,6 +1,6 @@
 <?php
 
-namespace Adadgio\DoctrineDQLBundle\Common;
+namespace Adadgio\DoctrineDQLBundle\DQL;
 
 class Limit
 {
@@ -12,7 +12,7 @@ class Limit
         if ($disable === static::LIMIT_NONE) {
 
             return $limit;
-            
+
         } else if (null === $limit) {
 
             return static::MAX_SECURITY_LIMIT;

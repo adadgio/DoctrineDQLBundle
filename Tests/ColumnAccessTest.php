@@ -2,7 +2,7 @@
 
 namespace Adadgio\DoctrineDQLBundle\Tests;
 
-use Adadgio\DoctrineDQLBundle\Accessor\ColumnAccess;
+use Adadgio\DoctrineDQLBundle\Collection\ColumnAccess;
 use Adadgio\DoctrineDQLBundle\Tests\Helper\TestEntity;
 
 class ColumnAccessTest extends \PHPUnit_Framework_TestCase
@@ -28,7 +28,7 @@ class ColumnAccessTest extends \PHPUnit_Framework_TestCase
                 )
             )
         );
-        
+
         // test simple value access
         $idsA = ColumnAccess::getColumnValues($collection, '[id]');
         $idsB = ColumnAccess::getColumnValues($collection, 'id');

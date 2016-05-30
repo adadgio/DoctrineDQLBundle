@@ -2,7 +2,7 @@
 
 namespace Adadgio\DoctrineDQLBundle\Tests;
 
-use Adadgio\DoctrineDQLBundle\Common\Where;
+use Adadgio\DoctrineDQLBundle\DQL\Where;
 
 class WhereTest extends \PHPUnit_Framework_TestCase
 {
@@ -10,7 +10,7 @@ class WhereTest extends \PHPUnit_Framework_TestCase
     {
         $alias = 'e';
         $conditions = array();
-
+        
         $input = array(
             'category($IN)'     => array('ONE', 'TWO'),
             'published'         => 1,

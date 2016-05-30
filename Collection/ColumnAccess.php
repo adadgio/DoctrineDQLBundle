@@ -1,6 +1,6 @@
 <?php
 
-namespace Adadgio\DoctrineDQLBundle\Accessor;
+namespace Adadgio\DoctrineDQLBundle\Collection;
 
 use Doctrine\Common\Inflector\Inflector;
 use Symfony\Component\PropertyAccess\PropertyAccess;

@@ -2,7 +2,7 @@
 
 namespace Adadgio\DoctrineDQLBundle\Tests;
 
-use Adadgio\DoctrineDQLBundle\Common\Offset;
+use Adadgio\DoctrineDQLBundle\DQL\Offset;
 
 class OffsetTest extends \PHPUnit_Framework_TestCase
 {

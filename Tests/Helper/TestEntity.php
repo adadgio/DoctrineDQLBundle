@@ -5,18 +5,18 @@ namespace Adadgio\DoctrineDQLBundle\Tests\Helper;
 class TestEntity
 {
     private $id;
-
     private $name;
-
     private $age;
-    
-    public function __construct($id, $name, $age)
+    private $tags;
+
+    public function __construct($id, $name, $age, array $tags = array())
     {
         $this->id = $id;
         $this->name = $name;
         $this->age = $age;
+        $this->tags = $tags;
     }
-
+    
     public function getId()
     {
         return $this->id;
@@ -30,5 +30,10 @@ class TestEntity
     public function getAge()
     {
         return $this->age;
+    }
+
+    public function getTags()
+    {
+        return $this->tags;
     }
 }

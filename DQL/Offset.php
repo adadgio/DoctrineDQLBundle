@@ -1,6 +1,6 @@
 <?php
 
-namespace Adadgio\DoctrineDQLBundle\Common;
+namespace Adadgio\DoctrineDQLBundle\DQL;
 
 class Offset
 {

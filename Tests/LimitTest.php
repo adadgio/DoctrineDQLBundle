@@ -2,7 +2,7 @@
 
 namespace Adadgio\DoctrineDQLBundle\Tests;
 
-use Adadgio\DoctrineDQLBundle\Common\Limit;
+use Adadgio\DoctrineDQLBundle\DQL\Limit;
 
 class LimitTest extends \PHPUnit_Framework_TestCase
 {
