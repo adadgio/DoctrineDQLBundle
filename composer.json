@@ -1,0 +1,18 @@
+{
+    "name": "adadgio/DoctrineDQLBundle",
+    "type": "library",
+    "description": "Adadgio DoctrineDQLBundle",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Romain BRUCKERT",
+            "email": "romain.bruckert.esc@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.3"
+    },
+    "autoload": {
+        "classmap": ["DoctrineDQLBundle/"]
+    }
+}
