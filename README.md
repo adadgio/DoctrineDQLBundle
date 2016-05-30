@@ -8,25 +8,22 @@ A set of simple helper to help reduce the size of your Symfony repositories.
 ### Where conditions
 
 ```
-// assuming a Symfony repository
-class MyRepository extends EntityRepository
+// assuming a Symfony repository: and I am a thin repository method
+public function findBy(array $where = array(), array $orderBy = array(), $limit = null, $offset)
 {
-    public function findBy(array $where = array(), array $orderBy = array(), $limit = null, $offset)
-    {
-        $builder = $this->createQueryBuilder('e');
+    $builder = $this->createQueryBuilder('e');
 
-        $builder->leftJoin('e.friends', 'f')
+    $builder->leftJoin('e.friends', 'f')
 
-        $builder = $builder::Where($where);
+    // killer feature. No options resolver or if...then(s) !
+    $builder = $builder::Where($where);
 
-        $builder->setMaxResults(Limit::enforce($limit)); // will never be more than 1000
-        // $builder->setMaxResults(Limit::enforce($limit, Limit::NO_LIMIT)); // will eventualy be more than 1000, depends on input
-        $builder->setFirstResult(Offset::offset($limit)); // doesn't do a lot, just for style and integer conversion
+    $builder->setMaxResults(Limit::enforce($limit)); // will never be more than 1000
+    // $builder->setMaxResults(Limit::enforce($limit, Limit::NO_LIMIT)); // will eventually be more than 1000, depends on input
+    $builder->setFirstResult(Offset::offset($limit)); // doesn't do a lot, just for style and integer conversion
 
-        return $builder->getQuery()->getResult(); // standard symfony common saying
-    }
+    return $builder->getQuery()->getResult(); // standard symfony common saying
 }
-
 ```
 
 ... and the corresponding input
