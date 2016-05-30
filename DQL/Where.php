@@ -38,7 +38,7 @@ class Where
 
                     $uniq++;
                 }
-
+                
                 $orX = $builder->expr()->orX();
                 $orX->addMultiple($builderExprs);
                 $builder->andWhere($orX);
@@ -47,30 +47,38 @@ class Where
                 // add a scalar statement
                 $type = self::scalarStatement($field);
                 $condition = self::createBuilderCondition($alias, $type, $value);
+                $paramValue = self::createParameterValue($type, $value);
 
-                // transform value for LIKE(s)
-                if ($type['operator'] === 'LIKE') {
-                    $value = '%'. str_replace('%', '', $value) .'%';
-                }
-                // transform value for LIKE(s)
-                if ($type['operator'] === 'NOT LIKE') {
-                    $value = '%'. str_replace('%', '', $value) .'%';
-                }
+                if (null === $paramValue) {
+                    // happens with "IS NULL", "IS NOT NULL"
+                    $builder->andWhere($condition);
 
-                // special treatment for IS condition (IS NULL|NOT NULL)
-                if ($type['operator'] === 'IS') {
-                    $builder
-                        ->andWhere($condition);
-                } else if ($type['operator'] === 'BETWEEN') {
+                } else if (is_array($paramValue) && $type['operator'] === 'BETWEEN') { /* && $type['operator'] === 'BETWEEN' */
                     $builder
                         ->andWhere($condition)
                         ->setParameter($type['parameter'][0], $value[0])
                         ->setParameter($type['parameter'][1], $value[1]);
+
                 } else {
                     $builder
                         ->andWhere($condition)
                         ->setParameter($type['field'], $value);
                 }
+
+                // special treatment for IS condition (IS NULL|NOT NULL)
+                // if ($type['operator'] === 'IS') {
+                //     $builder
+                //         ->andWhere($condition);
+                // } else if ($type['operator'] === 'BETWEEN') {
+                //     $builder
+                //         ->andWhere($condition)
+                //         ->setParameter($type['parameter'][0], $value[0])
+                //         ->setParameter($type['parameter'][1], $value[1]);
+                // } else {
+                //     $builder
+                //         ->andWhere($condition)
+                //         ->setParameter($type['field'], $value);
+                // }
             }
 
             $uniq++;
@@ -95,6 +103,36 @@ class Where
         }
 
         return $condition;
+    }
+
+    /**
+     * Return false if a parameter is not needed, otherwise the formatted parameter
+     * @param  array  $type
+     * @param  mixed  $value
+     * @return mixed
+     */
+    public static function createParameterValue($type, $value)
+    {
+        // transform value for LIKE(s)
+        if ($type['operator'] === 'LIKE' OR $type['operator'] === 'NOT LIKE') {
+            return '%'. str_replace('%', '', $value) .'%';
+        }
+
+        // transform value for LEFT LIKE(s)
+        if ($type['operator'] === 'LLIKE') {
+            return str_replace('%', '', $value) .'%';
+        }
+
+        // transform value for RIGHT LIKE(s)
+        if ($type['operator'] === 'RLIKE') {
+            return '%'. str_replace('%', '', $value);
+        }
+
+        if ($type['operator'] === 'IS') {
+            return null;
+        }
+
+        return $value;
     }
 
     /**

@@ -3,7 +3,7 @@
 namespace Adadgio\DoctrineDQLBundle\Tests;
 
 use Adadgio\DoctrineDQLBundle\Collection\IndexedCollection;
-use Adadgio\DoctrineDQLBundle\Tests\Helper\TestEntity;
+use Adadgio\DoctrineDQLBundle\Entity\TestEntity;
 
 class IndexedCollectionTest extends \PHPUnit_Framework_TestCase
 {
@@ -44,7 +44,7 @@ class IndexedCollectionTest extends \PHPUnit_Framework_TestCase
         ));
 
         $idsA = IndexedCollection::indexBy($collection, '[id]');
-        
+
         $this->assertEquals(array_keys($idsA), array(37, 39));
     }
 }

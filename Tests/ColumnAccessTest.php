@@ -3,7 +3,7 @@
 namespace Adadgio\DoctrineDQLBundle\Tests;
 
 use Adadgio\DoctrineDQLBundle\Collection\ColumnAccess;
-use Adadgio\DoctrineDQLBundle\Tests\Helper\TestEntity;
+use Adadgio\DoctrineDQLBundle\Entity\TestEntity;
 
 class ColumnAccessTest extends \PHPUnit_Framework_TestCase
 {
