@@ -3,9 +3,7 @@ DoctrineDQL Bundle
 
 A set of simple helper to help reduce the size of your Symfony repositories.
 
-## Examples
-
-### Where conditions
+## Examples & usage
 
 ```
 // assuming a Symfony repository: and I am a thin repository method
