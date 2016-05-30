@@ -3,6 +3,18 @@ DoctrineDQL Bundle
 
 A set of simple helper to help reduce the size of your Symfony repositories.
 
+## Install
+
+Install with composer.
+
+`composer require adadgio/doctrine-dql-bundle`
+
+Make the following changes to your `AppKernel.php` file.
+
+```
+new Adadgio\DoctrineDQLBundle\AdadgioDoctrineDQLBundle(),
+```
+
 ## Examples & usage
 
 ```
