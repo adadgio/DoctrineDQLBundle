@@ -2,11 +2,34 @@
 
 namespace Adadgio\DoctrineDQLBundle\Entity;
 
+use Doctrine\ORM\Mapping as ORM;
+
+/**
+ * @ORM\Entity
+ * @ORM\Table(name="product")
+ */
 class TestEntity
 {
+    /**
+     * @ORM\Column(type="integer")
+     * @ORM\Id
+     * @ORM\GeneratedValue(strategy="AUTO")
+     */
     private $id;
+    
+    /**
+    * @ORM\Column(type="string", length=100)
+    */
     private $name;
+
+    /**
+    * @ORM\Column(type="integer")
+    */
     private $age;
+
+    /**
+     * @ORM\Column(type="array")
+     */
     private $tags;
 
     public function __construct($id = null, $name = null, $age = 0, array $tags = array())

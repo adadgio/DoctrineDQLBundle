@@ -4,208 +4,230 @@ namespace Adadgio\DoctrineDQLBundle\DQL;
 
 class Where
 {
-    public static function hello()
+    private $alias;
+
+    private $parameters;
+
+    private $conditions;
+
+    private $defaultOperator = '=';
+
+    private $operators = array('>', '<', '>=', '<=', 'IN', 'NOT IN', 'LIKE', 'IS', 'LLIKE', 'RLIKE', 'BETWEEN', 'NOT LIKE');
+
+    /**
+     * Constructor, also sets default variables
+     *
+     * @param string Default alias used in the repository base builder
+     * @param array  Where condition with (possibly) special operators
+     */
+    public function __construct($alias, array $where = array())
     {
-        echo "Hello";
+        $this->alias = $alias;
+        $this->parameters = array();
+        $this->conditions = array();
+
+        $this->conditions = $this->createNestedConditions($alias, $where);
     }
 
-    public static function andWhere($baseAlias, \Doctrine\ORM\QueryBuilder $builder, array $where = array())
+    /**
+     * Get conditions, for testing and debug purposes.
+     *
+     * @param array \Conditions(s)
+     */
+    public function getConditions()
     {
-        $uniq = 0;
+        return $this->conditions;
+    }
 
-        foreach ($where as $f => $value) {
-            // $field = $field.$uniq;
+    /**
+     * Get parameters, for each condition.
+     *
+     * @param array \Conditions(s)
+     */
+    public function getParametersValues(array $conditions = array())
+    {
+        $parameters = array();
+        // if (empty($conditions)) {
+        //     $conditions = $this->conditions;
+        // }
+        //
+        // foreach ($this->conditions as $condition) {
+        //     if (is_array($condition)) {
+        //
+        //     } else {
+        //         $key = $condition->getParam();
+        //         $parameters[$key] = $condition->getValue();
+        //     }
+        // }
+        //
+        // return $parameters;
+    }
 
-            $ex = explode('.', $f);
-            if (count($ex) === 2) {
-                // the alias + field(s) is overriden !
-                $field = $ex[1];
-                $alias = $ex[0];
-            } else {
-                $field = $f;
-                $alias = $baseAlias;
-            }
-
-            if ($field === '($OR)') {
-
-                // add query builder andXOr statement
-                $builderExprs = array();
-
-                foreach ($value as $nestedField => $nestedValue) {
-                    $subCondition = self::expressionStatement($builder, $alias, $nestedField, $uniq);
-                    $builderExprs[] = $subCondition['builder_expression'];
-                    $builder->setParameter($subCondition['field'].$uniq, $nestedValue);
-
-                    $uniq++;
-                }
-                
-                $orX = $builder->expr()->orX();
-                $orX->addMultiple($builderExprs);
-                $builder->andWhere($orX);
-
-            } else {
-                // add a scalar statement
-                $type = self::scalarStatement($field);
-                $condition = self::createBuilderCondition($alias, $type, $value);
-                $paramValue = self::createParameterValue($type, $value);
-
-                if (null === $paramValue) {
-                    // happens with "IS NULL", "IS NOT NULL"
-                    $builder->andWhere($condition);
-
-                } else if (is_array($paramValue) && $type['operator'] === 'BETWEEN') { /* && $type['operator'] === 'BETWEEN' */
-                    $builder
-                        ->andWhere($condition)
-                        ->setParameter($type['parameter'][0], $value[0])
-                        ->setParameter($type['parameter'][1], $value[1]);
-
-                } else {
-                    $builder
-                        ->andWhere($condition)
-                        ->setParameter($type['field'], $value);
-                }
-
-                // special treatment for IS condition (IS NULL|NOT NULL)
-                // if ($type['operator'] === 'IS') {
-                //     $builder
-                //         ->andWhere($condition);
-                // } else if ($type['operator'] === 'BETWEEN') {
-                //     $builder
-                //         ->andWhere($condition)
-                //         ->setParameter($type['parameter'][0], $value[0])
-                //         ->setParameter($type['parameter'][1], $value[1]);
-                // } else {
-                //     $builder
-                //         ->andWhere($condition)
-                //         ->setParameter($type['field'], $value);
-                // }
-            }
-
-            $uniq++;
+    /**
+     * Returns conditions, for testing and debug purposes.
+     *
+     * @param array \Conditions(s)
+     */
+    public function getConditionsStatements(array $conditions = array())
+    {
+        $statements = array();
+        if (empty($conditions)) {
+            $conditions = $this->conditions;
         }
 
-        return $builder;
+        foreach ($conditions as $condition) {
+            if (is_array($condition)) {
+                // handle nested conditions as recursive
+                $statements[] = $this->getConditionsStatements($condition);
+            } else {
+                // scalar conditions
+                $statements[] = $condition->getStatement();
+            }
+        }
+
+        return $statements;
     }
 
-    public static function createBuilderCondition($alias, $type, $value)
+    /**
+     * Create conditions, as possible nested recursive structure.
+     * The array of conditions means that each condition is separated later
+     * by the "AND" keyword, and nested conditions by the "OR" keyword.
+     *
+     * @param  string Default alias (my be overrien later by field naming with dot "e.field")
+     * @param  array  Array of conditions with possibly special operators
+     * @return array Nested (or not) \Condition(s) objects
+     */
+    public function createNestedConditions($alias, array $where = array())
     {
-        if ($type['operator'] === 'IS') {
+        $conditions = array();
 
-            $condition = sprintf('%s.%s %s %s', $alias, $type['field'], $type['operator'], $value);
+        foreach ($where as $field => $value) {
+            if ($field === '($OR)') {
+                // nested conditions, use OR, and value is another array of conditions
+                $conditions[] = $this->createNestedConditions($alias, $value);
 
-        } else if ($type['operator'] === 'BETWEEN') {
+            } else {
+                // scalar conditions, use AND
+                $conditions[] = $this->createScalarCondition($alias, $field, $value);
+            }
+        }
 
-            $condition = sprintf('%s.%s BETWEEN %s AND %s', $alias, $type['field'], $type['parameter'][0], $type['parameter'][1]);
+        return $conditions;
+    }
+
+    /**
+     * Create a scalar condition (opposed to nested).
+     *
+     * @param  string Special operator, like ($LIKE), ($>=), etc
+     * @param  mixed  Condition value
+     * @return object \Condition
+     */
+    public function createScalarCondition($alias, $field, $value)
+    {
+        $regex = $this->getRegex();
+
+        // remove "e.field" dots when the key contains a custom alias
+        // and also get a clean field name then
+        $alias = $this->getCustomAlias($field); // get possible custom alias
+        $field = $this->getUnaliasedFieldName($field); // removes the field custom alias
+
+        if (preg_match($regex, $field, $matches)) {
+
+            $fieldName = $this->getFieldName($matches);
+            $operator = $this->getOperator($matches);
+            $param = $this->createIndexedParameter($fieldName); // create unique abstract param name
+
+            $condition = new Condition($alias, $fieldName, $operator, $param, $value);
 
         } else {
 
-            $condition = sprintf('%s.%s %s %s', $alias, $type['field'], $type['operator'], $type['parameter']);
+            $param = $this->createIndexedParameter($field); // create unique abstract param name
+
+            $condition = new Condition($alias, $field, $this->defaultOperator, $param, $value);
         }
+
+        // set "AND" or "OR" glue
+        //$condition->setGlue($glue);
 
         return $condition;
     }
 
     /**
-     * Return false if a parameter is not needed, otherwise the formatted parameter
-     * @param  array  $type
-     * @param  mixed  $value
-     * @return mixed
+     * Get the regex that guesses the comparison(s) operator(s).
+     *
+     * @return string Pcre regex
      */
-    public static function createParameterValue($type, $value)
+    public function getRegex()
     {
-        // transform value for LIKE(s)
-        if ($type['operator'] === 'LIKE' OR $type['operator'] === 'NOT LIKE') {
-            return '%'. str_replace('%', '', $value) .'%';
-        }
-
-        // transform value for LEFT LIKE(s)
-        if ($type['operator'] === 'LLIKE') {
-            return str_replace('%', '', $value) .'%';
-        }
-
-        // transform value for RIGHT LIKE(s)
-        if ($type['operator'] === 'RLIKE') {
-            return '%'. str_replace('%', '', $value);
-        }
-
-        if ($type['operator'] === 'IS') {
-            return null;
-        }
-
-        return $value;
+        return sprintf('~[a-zA-Z0-9_\.]+\((\$(?:%s){1})\)~', implode('|', $this->operators));
     }
 
     /**
-     * @todo Handles all mysql operator(s) expression(s)
+     * Create a numbered index unique parameter name,
+     * also needs a clean field name without alias.
+     *
+     * @param  string Field name (unaliased)
+     * @return string Parameter name, suffixed by a unique index
      */
-    public static function expressionStatement($builder, $alias, $field, $uniq)
+    public function createIndexedParameter($field)
     {
-        $type = self::scalarStatement($field);
+        $index = count($this->parameters);
+        
+        $parameter = $field.$index;
+        $this->parameters[] = $parameter;
 
-        $condition = sprintf('%s.%s %s %s', $alias, $type['field'], $type['operator'], $type['parameter']);
-
-        switch ($type['operator']) {
-            case 'LIKE':
-                $builderExpr = $builder->expr()->like(sprintf('%s.%s', $alias, $type['field']), sprintf(':%s', $type['field'].$uniq));
-            break;
-            case 'NOT LIKE':
-                $builderExpr = $builder->expr()->like(sprintf('%s.%s', $alias, $type['field']), sprintf(':%s', $type['field'].$uniq));
-            break;
-            case 'BETWEEN':
-                // @todo...
-            break;
-            default:
-                $builderExpr = $builder->expr()->eq(sprintf('%s.%s', $alias, $type['field']), sprintf(':%s', $type['field'].$uniq));
-            break;
-        }
-
-        return array(
-            'field' => $type['field'],
-            'builder_expression' => $builderExpr,
-        );
+        return $parameter;
     }
 
-    public static function scalarStatement($field)
+    /**
+     * Normalizes the field name if it contains a custom alias "e.field" to "field".
+     *
+     * @param string  Possibly aliased field name
+     * @return string Unaliased field name
+     */
+    public function getUnaliasedFieldName($field)
     {
-        $operator = '='; // default operator
-        $parameter = sprintf(':%s', $field); // default param form
+        $exp = explode('.', $field);
 
-        $operators = array('>', '<', '>=', '<=', 'IN', 'NOT IN', 'LIKE', 'IS', 'LLIKE', 'RLIKE', 'BETWEEN', 'NOT LIKE'); // possible other operators
+        return end($exp);
+    }
 
-        $regex = sprintf('~[a-zA-Z0-9_]+\((\$(?:%s){1})\)~', implode('|', $operators));
+    /**
+     * Explode a custom alias field name form "e.field".
+     *
+     * @param  string  Custom (or not) alias and field name
+     * @return string Clean field name
+     */
+    public function getCustomAlias($field)
+    {
+        $exp = explode('.', $field);
 
-        if (preg_match($regex, $field, $matches)) {
+        return (count($exp) === 2) ? $exp[0] : $this->alias;
+    }
 
-            $field = str_replace('('.$matches[1].')', '', $matches[0]); // remove the special expression found
-            $operator = str_replace(array('(', ')', '$'), '', $matches[1]);
+    /**
+     * Get field name from custom expression "field($LIKE)".
+     *
+     * @param  array  Regex matches
+     * @return string Normalized simple field name
+     */
+    public function getFieldName(array $regexMatches)
+    {
+        $field = str_replace('('.$regexMatches[1].')', '', $regexMatches[0]);
 
-            // "IN" required parenthesis (the only special value)
-            if ($operator === 'IN' OR $operator === 'NOT IN') {
+        return $field;
+    }
 
-                $parameter = sprintf('(:%s)', $field); // default param form
+    /**
+     * Get operator found in the special expression.
+     *
+     * @param  string Special expression like "($LIKE)"
+     * @return string Operator such as "LIKE"
+     */
+    public function getOperator(array $regexMatches)
+    {
+        $operator = str_replace(array('(', ')', '$'), '', $regexMatches[1]);
 
-            } else if ($operator === 'IS') {
-
-                $parameter = null;
-
-            } else if ($operator === 'BETWEEN') {
-
-                $parameter = array(
-                    sprintf(':%s', $field.'1'),
-                    sprintf(':%s', $field.'2'),
-                );
-
-            } else {
-                $parameter = sprintf(':%s', $field); // default param form
-            }
-        }
-
-        $data = array(
-            'field'     => $field,
-            'operator'  => $operator,
-            'parameter' => $parameter,
-        );
-
-        return $data;
+        return $operator;
     }
 }
