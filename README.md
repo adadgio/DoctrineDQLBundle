@@ -93,3 +93,5 @@ $where = array(
     'age($<)'  => 11,
 );
 ```
+
+Killer tip: this custom DQL query language integrates very well with [adadgio/http-query-bundle](https://github.com/adadgio/http-query-bundle), which also provides a Javascript utility to send those queries directly to a controller and a repository method ! As we say in france: **comme papa dans maman** !
