@@ -28,7 +28,7 @@ class Where
 
         $this->conditions = $this->createNestedConditions($alias, $where);
     }
-
+    
     /**
      * Get conditions, for testing and debug purposes.
      *
@@ -172,7 +172,7 @@ class Where
     public function createIndexedParameter($field)
     {
         $index = count($this->parameters);
-        
+
         $parameter = $field.$index;
         $this->parameters[] = $parameter;
 

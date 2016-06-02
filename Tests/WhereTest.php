@@ -6,7 +6,6 @@ use Adadgio\DoctrineDQLBundle\DQL\Where;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\Common\Persistence\ObjectManager;
 use Adadgio\DoctrineDQLBundle\Entity\TestEntity;
-use Adadgio\DoctrineDQLBundle\Entity\TestEntityRepository;
 
 class WhereTest extends \PHPUnit_Framework_TestCase
 {
@@ -50,7 +49,7 @@ class WhereTest extends \PHPUnit_Framework_TestCase
         $parameter = $conditions[2]->getValue();
         $this->assertEquals($statement, 'e.updated_at >= :updated_at2');
         $this->assertEquals($parameter, '2016-01-01');
-        
+
         $statement = $conditions[3]->getStatement();
         $parameter = $conditions[3]->getValue();
         $this->assertEquals($statement, 'e.truc NOT IN (:truc3)');

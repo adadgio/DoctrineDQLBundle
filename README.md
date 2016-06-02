@@ -11,13 +11,13 @@ Install with composer.
 
 Make the following change to your `AppKernel.php` file to the registered bundles array.
 
-```
+```php
 new Adadgio\DoctrineDQLBundle\AdadgioDoctrineDQLBundle(),
 ```
 
 ## Examples & usage
 
-```
+```php
 use Adadgio\DoctrineDQLBundle\DQL\Where;
 use Adadgio\DoctrineDQLBundle\DQL\Limit;
 use Adadgio\DoctrineDQLBundle\DQL\Offset;
@@ -57,7 +57,7 @@ public function findBy(array $where = array(), array $orderBy = array(), $limit 
 
 ... and the corresponding input
 
-```
+```php
 $where = array(
     'id'            => 2,               // will translate to e.id = 2
     'name($LIKE)'   => 'Tom Sawyer',    // will translate to e.name LIKE '%Tom Sawyer%'
@@ -71,7 +71,7 @@ $bookCharacters = $em->...->findBy($whereOptions, array('id' => 'DESC', 15, 5));
 
 Other advanced less common usages are possible (these are the full available options)
 
-```
+```php
 $where = array(
     'id'             => 2,
     'name($LIKE)'    => 'Tom Sawyer',

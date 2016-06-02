@@ -3,6 +3,7 @@
     "type": "library",
     "description": "Adadgio DoctrineDQLBundle",
     "license": "MIT",
+    "type": "symfony-bundle",
     "authors": [
         {
             "name": "Romain BRUCKERT",
