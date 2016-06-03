@@ -1,9 +1,8 @@
 {
     "name": "adadgio/doctrine-dql-bundle",
-    "type": "library",
+    "type": "symfony-bundle",
     "description": "Adadgio DoctrineDQLBundle",
     "license": "MIT",
-    "type": "symfony-bundle",
     "authors": [
         {
             "name": "Romain BRUCKERT",
