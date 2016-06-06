@@ -94,4 +94,6 @@ $where = array(
 );
 ```
 
-Killer tip: this custom DQL query language integrates very well with [adadgio/http-query-bundle](https://github.com/adadgio/http-query-bundle), which also provides a Javascript utility to send those queries directly to a controller and a repository method ! As we say in france: **comme papa dans maman** !
+## Javascript http query input component
+
+Now that you've seen how to read and use custom DQL language, lets try to write queries and use them from javascript via ajax. Read the [http query input component]() documentation.
