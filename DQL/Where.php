@@ -6,6 +6,8 @@ class Where
 {
     private $alias;
 
+    private $values;
+
     private $parameters;
 
     private $conditions;
@@ -13,7 +15,7 @@ class Where
     private $defaultOperator = '=';
 
     private $operators = array('>', '<', '>=', '<=', 'IN', 'NOT IN', 'LIKE', 'IS', 'LLIKE', 'RLIKE', 'BETWEEN', 'NOT LIKE');
-
+    
     /**
      * Constructor, also sets default variables
      *
@@ -23,12 +25,71 @@ class Where
     public function __construct($alias, array $where = array())
     {
         $this->alias = $alias;
+        $this->values = array_values($where);
         $this->parameters = array();
         $this->conditions = array();
-
         $this->conditions = $this->createNestedConditions($alias, $where);
     }
-    
+
+    /**
+     * Return a modified query builder with the conditions.
+     *
+     * @param object \Doctrine\ORM\QueryBuilder
+     * @return object \Doctrine\ORM\QueryBuilder
+     */
+    public function digest(\Doctrine\ORM\QueryBuilder $builder)
+    {
+        foreach ($this->conditions as $condition) { // \Condition object
+
+            // if sub conditions, redigest
+            if ($condition instanceof \Adadgio\DoctrineDQLBundle\DQL\Condition) {
+
+                // case of between ! (value is an array of two values)
+                if ($condition->isBetween()) {
+                    $builder
+                        ->andWhere($condition->getStatement())
+                        ->setParameter($condition->getParamKey(0), $condition->getValue(0))
+                        ->setParameter($condition->getParamKey(1), $condition->getValue(1));
+
+                } else {
+                    $builder
+                        ->andWhere($condition->getStatement())
+                        ->setParameter($condition->getParam(), $condition->getValue());
+                }
+
+            } else {
+
+                $exprs = array();
+                foreach ($condition as $c) {
+                    $exprs[] = $this->expression($builder, $c);
+                    $builder->setParameter($c->getParam(), $c->getValue());
+                }
+
+                // use doctrine expression builder to make the "OR"
+                $orX = $builder->expr()->orX();
+                $orX->addMultiple($exprs);
+                $builder->andWhere($orX);
+            }
+        }
+
+        return $builder;
+    }
+
+    private function expression($builder, $condition)
+    {
+        switch ($condition->getOperator()) {
+            case 'LIKE':
+                return $builder->expr()->like($condition->getAliasAndField(), $condition->getAbstractParam());
+            break;
+            // case '=':
+            //
+            // break;
+            default:
+                return $builder->expr()->eq($condition->getAliasAndField(), $condition->getAbstractParam());
+            break;
+        }
+    }
+
     /**
      * Get conditions, for testing and debug purposes.
      *
@@ -46,7 +107,21 @@ class Where
      */
     public function getParametersValues(array $conditions = array())
     {
-        $parameters = array();
+        // $paramValues = array();
+        //
+        // foreach ($this->values as $value) {
+        //     $paramValues[] = $value;
+        //     // if (is_array($value)) {
+        //     //     foreach ($value as $val) {
+        //     //         $paramValues[] = $val;
+        //     //     }
+        //     // } else {
+        //     //     $paramValues[] = $value;
+        //     // }
+        // }
+        //
+        // return $paramValues;
+        // $parameters = array();
         // if (empty($conditions)) {
         //     $conditions = $this->conditions;
         // }
@@ -59,7 +134,7 @@ class Where
         //         $parameters[$key] = $condition->getValue();
         //     }
         // }
-        //
+
         // return $parameters;
     }
 
@@ -86,6 +161,18 @@ class Where
         }
 
         return $statements;
+    }
+
+    /**
+     * Join statements with and "AND" or "OR" operator, depending on the fact
+     * that conditions are nested or not, by convention (in this case join with "OR")
+     *
+     * @param  mixed A \Condition object or an array of \Condition(s) objects
+     * @return string
+     */
+    private function joinBy($condition, $andOrOr = 'AND')
+    {
+
     }
 
     /**

@@ -5,8 +5,8 @@ namespace Adadgio\DoctrineDQLBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ORM\Entity
- * @ORM\Table(name="product")
+ * @ORM\Entity()
+ * @ORM\Table(name="test")
  */
 class TestEntity
 {
@@ -16,7 +16,7 @@ class TestEntity
      * @ORM\GeneratedValue(strategy="AUTO")
      */
     private $id;
-    
+
     /**
     * @ORM\Column(type="string", length=100)
     */

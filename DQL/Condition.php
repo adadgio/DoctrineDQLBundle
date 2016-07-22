@@ -22,34 +22,42 @@ class Condition
         $this->alias = $alias;
         $this->field = $field;
         $this->param = $param;
+        $this->isBetween = false;
         $this->operator = $operator;
-
+        
         // setting the value, use a modifier when special operators are found
         switch ($operator) {
             case 'LIKE':
-                $this->value = '%'.$this->value.'%';
+                $this->value = '%'.$value.'%';
             break;
             case 'RLIKE':
                 $this->operator = 'LIKE';
-                $this->value = $this->value.'%';
+                $this->value = $value.'%';
             break;
             case 'LLIKE':
                 $this->operator = 'LIKE';
-                $this->value = '%'.$this->value;
+                $this->value = '%'.$value;
             break;
             case 'IN':
-                //$this->value = implode(',', $this->value);
                 $this->value = implode(',', $value);
             break;
             case 'NOT IN':
-                //$this->value = implode(',', $this->value);
                 $this->value = implode(',', $value);
             break;
+            case 'BETWEEN':
+                $this->isBetween = true;
+                $this->value = (array) $value; // is now an array
+                $this->param = array($param.'a' => $value[0], $param.'b' => $value[1]);
+            break;
             default;
-                // no modification
                 $this->value = $value;
             break;
         }
+    }
+
+    public function isBetween()
+    {
+        return $this->isBetween;
     }
 
     public function getGlue()
@@ -74,9 +82,24 @@ class Condition
         return $this->field;
     }
 
-    public function getParam()
+    public function getAliasAndField()
     {
-        return $this->param;
+        return $this->alias.'.'.$this->field;
+    }
+
+    public function getParam($index = null)
+    {
+        return (null !== $index) ? array_values($this->param)[$index] : $this->param;
+    }
+
+    public function getParamKey($index)
+    {
+        return array_keys($this->param)[$index];
+    }
+
+    public function getAbstractParam($index = null)
+    {
+        return (null !== $index) ? ':'.$this->param[$index] : ':'.$this->param;
     }
 
     public function getOperator()
@@ -84,22 +107,19 @@ class Condition
         return $this->operator;
     }
 
-    public function getValue()
+    public function getValue($index = null)
     {
-        return $this->value;
+        return (null !== $index) ? $this->value[$index] : $this->value;
     }
 
-    // create statement ?
     public function getStatement()
     {
         switch ($this->operator) {
             case 'BETWEEN':
                 // we need to create two params... (but unique!)
-                $paramA = $this->param.'a';
-                $paramB = $this->param.'b';
-
+                $paramKeys = array_keys($this->param);
                 $stmt = sprintf('%s.%s BETWEEN', $this->alias, $this->field);
-                $stmt .= sprintf(' :%s AND :%s', $paramA, $paramB);
+                $stmt .= sprintf(' :%s AND :%s', $paramKeys[0], $paramKeys[1]);
                 return $stmt;
             break;
             case 'IN':
