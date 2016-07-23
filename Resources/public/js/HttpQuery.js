@@ -74,7 +74,7 @@ var HttpQuery = {
 
         return this;
     },
-    
+
     /**
      * Get final query string.
      *
@@ -198,12 +198,40 @@ var HttpQuery = {
     },
 
     /**
+     * Perform a get query.
      *
+     * @param string Url
+     * @return \Promise
+     */
+    get: function (url, type) {
+        var _self = this;
+        if (typeof type == 'undefined') { var type = 'json'; }
+
+        return new Promise(function (resolve, reject) {
+            $.ajax({
+                url: url,
+                type: 'get',
+                dataType: type,
+                data: _self.getPostQuery(),
+                success: function (response) {
+                    resolve(response);
+                },
+                error: function (x,t,e) {
+                    reject(e);
+                }
+            });
+        });
+    },
+
+    /**
+     * Perform a post query.
+     *
+     * @param string Url
+     * @return \Promise
      */
     post: function (url, type) {
         var _self = this;
-        console.log(_self.getQuery());
-        console.log(_self.getPostQuery());
+        if (typeof type == 'undefined') { var type = 'json'; }
 
         return new Promise(function (resolve, reject) {
             $.ajax({

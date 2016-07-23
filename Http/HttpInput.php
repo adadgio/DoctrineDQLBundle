@@ -78,7 +78,7 @@ class HttpInput
         foreach ($filterInput as $key => $filter) {
             // remove special conditions in parenthesis, keep only "alias.field" part of filter
             $key2 = preg_replace('~([a-z0-9_\.]+)(\(.*\))~', '$1', $key);
-            
+
             // skip if not config
             if (!isset($this->configuration[$key2])) { continue; }
                 switch ($this->configuration[$key2]) {
@@ -101,28 +101,29 @@ class HttpInput
 
         return $filterInput; // already formated as we wanted it ! :-)
     }
-
-    private function explodeGetFilter($queryInput)
+    
+    private function explodeGetFilter($filterInput)
     {
-        $filter = array();
-        $parts = explode('AND', $queryInput);
-
-        // clean each part found quickly
-        $parts = array_filter(array_map('trim', $parts));
-
-        foreach ($parts as $part) {
-            $exp = explode(':', $part);
-
-            if (count($exp) === 2) {
-                $fld = $exp[0];
-                $val = $this->normalizeValueExpression($exp[1]);
-                $filter[] = array($fld, $val);
-            } else {
-                throw new \Exception(sprintf('Query criterium for "%s" must have a value, and look like "alias($OPERATOR).field:value" or "alias.field:value"', $exp[0]));
-            }
-        }
-
-        return $filter;
+        return $filterInput;
+        // $filter = array();
+        // $parts = explode('AND', $filterInput);
+        //
+        // // clean each part found quickly
+        // $parts = array_filter(array_map('trim', $parts));
+        //
+        // foreach ($parts as $part) {
+        //     $exp = explode(':', $part);
+        //
+        //     if (count($exp) === 2) {
+        //         $fld = $exp[0];
+        //         $val = $this->normalizeValueExpression($exp[1]);
+        //         $filter[] = array($fld, $val);
+        //     } else {
+        //         throw new \Exception(sprintf('Query criterium for "%s" must have a value, and look like "alias($OPERATOR).field:value" or "alias.field:value"', $exp[0]));
+        //     }
+        // }
+        //
+        // return $filter;
     }
 
     private function explodeSort($sortString)
