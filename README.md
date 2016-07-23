@@ -43,7 +43,7 @@ public function findBy(array $where = array(), array $orderBy = array(), $limit 
     $builder->setFirstResult(Offset::offset($offset)); // doesn't do a lot, just for integer conversion
 
     $collection = $builder->getQuery()->getResult(); // standard symfony common saying
-    
+
     // now lets say i want the collection indexed by id (for any other further usage)
     $collection = IndexedCollection::indexBy($collection, '[id]'); // nb: would also work with pure arrays
 
@@ -81,8 +81,8 @@ $where = array(
     'age($IS NOT)'    => null,
     'date($BETWEEN)'  => array('2016-01-01', '2016-02-25'), // including both start and end dates
     '($OR)' => array(
-        //'name($LLIKE)' => 'Tom', // LIKE '%Tom', // left like not implemented in current version
-        //'name($RLIKE)' => 'Sawyer', // LIKE 'Sawyer%', // right like not implemented in current version
+        //'name($LLIKE)' => 'Tom', // LIKE '%Tom', // left like
+        //'name($RLIKE)' => 'Sawyer', // LIKE 'Sawyer%', // right like
         'name($IS)'   => null,
         'age($<)' => 4,
     ),
