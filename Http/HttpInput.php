@@ -12,14 +12,29 @@ class HttpInput
     private $sort;
     private $limit;
     private $offset;
+    private $configuration;
 
-    public function __construct(Request $request)
+    public function __construct(Request $request = null, array $configuration = array())
+    {
+        $this->configuration = $configuration;
+    }
+
+    public function configure(array $configuration = array())
+    {
+        $this->configuration = $configuration;
+
+        return $this;
+    }
+
+    public function handleRequest(Request $request)
     {
         if ($request->getMethod() === 'POST') {
             $this->getPostInput($request);
         } else {
             $this->getGetInput($request);
         }
+
+        return $this;
     }
 
     private function getGetInput(Request $request)
@@ -27,7 +42,7 @@ class HttpInput
         $this->limit = $this->setLimit($request->query->get('limit'));
         $this->offset = $this->setOffset($request->query->get('offset'));
         $this->sort = $this->explodeSort($request->query->get('sort'));
-        $this->filter = $this->explodeFilter($request->query->get('filter'));
+        $this->filter = $this->explodeGetFilter($request->query->get('filter'));
     }
 
     private function getPostInput(Request $request)
@@ -35,7 +50,7 @@ class HttpInput
         $this->limit = $this->setLimit($request->request->get('limit'));
         $this->offset = $this->setOffset($request->request->get('offset'));
         $this->sort = $this->explodeSort($request->request->get('sort'));
-        $this->filter = $this->explodeFilter($request->request->get('filter'));
+        $this->filter = $this->explodePostFilter($request->request->get('filter'));
     }
 
     public function getFilter()
@@ -58,15 +73,40 @@ class HttpInput
         return $this->offset;
     }
 
-    private function explodeFilter($queryString)
+    private function explodePostFilter(array $filterInput)
     {
-        print_r($queryString);
-        $filter = array();
-        $parts = (is_array($queryString)) ? $queryString : explode('AND', $queryString);
+        foreach ($filterInput as $key => $filter) {
+            // remove special conditions in parenthesis, keep only "alias.field" part of filter
+            $key2 = preg_replace('~([a-z0-9_\.]+)(\(.*\))~', '$1', $key);
+            
+            // skip if not config
+            if (!isset($this->configuration[$key2])) { continue; }
+                switch ($this->configuration[$key2]) {
+                    case 'integer':
+                        $filterInput[$key] = (int) $filter;
+                    break;
+                    case 'string':
+                        $filterInput[$key] = (string) $filter;
+                    break;
+                    case 'boolean':
+                        $filterInput[$key] = (bool) $filter;
+                    break;
+                    default:
+                        $filterInput[$key] = $filter;
+                    break;
+                }
 
-        dump($parts);
-        exit;
-        
+            // @todo Turn "[...]" string into an array !!
+        }
+
+        return $filterInput; // already formated as we wanted it ! :-)
+    }
+
+    private function explodeGetFilter($queryInput)
+    {
+        $filter = array();
+        $parts = explode('AND', $queryInput);
+
         // clean each part found quickly
         $parts = array_filter(array_map('trim', $parts));
 

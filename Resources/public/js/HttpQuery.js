@@ -74,7 +74,7 @@ var HttpQuery = {
 
         return this;
     },
-
+    
     /**
      * Get final query string.
      *
@@ -196,13 +196,15 @@ var HttpQuery = {
         this.filter[field+'($NOT IN)'] = '[' + values.join(',') + ']';
         return this;
     },
-    
+
     /**
      *
      */
     post: function (url, type) {
         var _self = this;
+        console.log(_self.getQuery());
         console.log(_self.getPostQuery());
+
         return new Promise(function (resolve, reject) {
             $.ajax({
                 url: url,
