@@ -30,10 +30,9 @@ use Adadgio\DoctrineDQLBundle\Collection\ColumnAccessor;
 public function findBy(array $where = array(), array $orderBy = array(), $limit = null, $offset)
 {
     $builder = $this->createQueryBuilder('e');
-
     $builder->leftJoin('e.friends', 'f')
 
-    // killer feature. No options resolver or if...then(s) !
+    // killer feature, no options resolver or if...then(s) !
     $builder = (new Where('e', $where))->digest($builder);
 
     // order by statements
@@ -44,7 +43,7 @@ public function findBy(array $where = array(), array $orderBy = array(), $limit 
     $builder->setFirstResult(Offset::offset($offset)); // doesn't do a lot, just for integer conversion
 
     $collection = $builder->getQuery()->getResult(); // standard symfony common saying
-
+    
     // now lets say i want the collection indexed by id (for any other further usage)
     $collection = IndexedCollection::indexBy($collection, '[id]'); // nb: would also work with pure arrays
 
