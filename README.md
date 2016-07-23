@@ -34,7 +34,7 @@ public function findBy(array $where = array(), array $orderBy = array(), $limit 
     $builder->leftJoin('e.friends', 'f')
 
     // killer feature. No options resolver or if...then(s) !
-    $builder = Where::andWhere($where);
+    $builder = (new Where('e', $where))->digest($builder);
 
     // order by statements
     $builder = OrderBy::orderBy($where);
@@ -73,14 +73,14 @@ Other advanced less common usages are possible (these are the full available opt
 
 ```php
 $where = array(
-    'id'             => 2,
-    'name($LIKE)'    => 'Tom Sawyer',
-    'name($NOT LIKE)'    => 'Tom Sawyer',
-    'id($IN)'        => array(2,2),
-    'f.name($LIKE)'  => 'Huckleberry Finn',
-    'age($IS)'       => null,
-    'age($IS NOT)'   => null,
-    'date($BETWEEN)' => array('2016-01-01', '2016-02-25'), // including both start and end dates
+    'id'              => 2,
+    'name($LIKE)'     => 'Tom Sawyer',
+    'name($NOT LIKE)' => 'Tom Sawyer',
+    'id($IN)'         => array(2,2),
+    'f.name($LIKE)'   => 'Huckleberry Finn',
+    'age($IS)'        => null,
+    'age($IS NOT)'    => null,
+    'date($BETWEEN)'  => array('2016-01-01', '2016-02-25'), // including both start and end dates
     '($OR)' => array(
         //'name($LLIKE)' => 'Tom', // LIKE '%Tom', // left like not implemented in current version
         //'name($RLIKE)' => 'Sawyer', // LIKE 'Sawyer%', // right like not implemented in current version
