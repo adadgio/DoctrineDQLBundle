@@ -83,7 +83,7 @@ var HttpQuery = {
     buildQuery: function () {
 
     },
-    
+
     /**
      * Get final query string.
      *
@@ -195,5 +195,27 @@ var HttpQuery = {
 
         this.filter[field+'($NOT IN)'] = '[' + values.join(',') + ']';
         return this;
+    },
+    
+    /**
+     *
+     */
+    post: function (url, type) {
+        var _self = this;
+        console.log(_self.getPostQuery());
+        return new Promise(function (resolve, reject) {
+            $.ajax({
+                url: url,
+                type: 'post',
+                dataType: type,
+                data: _self.getPostQuery(),
+                success: function (response) {
+                    resolve(response);
+                },
+                error: function (x,t,e) {
+                    reject(e);
+                }
+            });
+        });
     },
 };

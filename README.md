@@ -95,4 +95,4 @@ $where = array(
 
 ## Javascript http query input component
 
-Now that you've seen how to read and use custom DQL language, lets try to write queries and use them from javascript via ajax. Read the [http query input component]() documentation.
+Available in the next release.

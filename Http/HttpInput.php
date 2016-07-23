@@ -15,16 +15,32 @@ class HttpInput
 
     public function __construct(Request $request)
     {
+        if ($request->getMethod() === 'POST') {
+            $this->getPostInput($request);
+        } else {
+            $this->getGetInput($request);
+        }
+    }
+
+    private function getGetInput(Request $request)
+    {
         $this->limit = $this->setLimit($request->query->get('limit'));
         $this->offset = $this->setOffset($request->query->get('offset'));
-
         $this->sort = $this->explodeSort($request->query->get('sort'));
         $this->filter = $this->explodeFilter($request->query->get('filter'));
     }
 
+    private function getPostInput(Request $request)
+    {
+        $this->limit = $this->setLimit($request->request->get('limit'));
+        $this->offset = $this->setOffset($request->request->get('offset'));
+        $this->sort = $this->explodeSort($request->request->get('sort'));
+        $this->filter = $this->explodeFilter($request->request->get('filter'));
+    }
+
     public function getFilter()
     {
-        return $this->where;
+        return $this->filter;
     }
 
     public function getSort()
@@ -44,8 +60,13 @@ class HttpInput
 
     private function explodeFilter($queryString)
     {
+        print_r($queryString);
         $filter = array();
-        $parts = explode('AND', $queryString);
+        $parts = (is_array($queryString)) ? $queryString : explode('AND', $queryString);
+
+        dump($parts);
+        exit;
+        
         // clean each part found quickly
         $parts = array_filter(array_map('trim', $parts));
 
