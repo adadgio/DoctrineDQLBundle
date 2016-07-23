@@ -15,7 +15,7 @@ class Where
     private $defaultOperator = '=';
 
     private $operators = array('>', '<', '>=', '<=', 'IN', 'NOT IN', 'LIKE', 'IS', 'LLIKE', 'RLIKE', 'BETWEEN', 'NOT LIKE');
-    
+
     /**
      * Constructor, also sets default variables
      *
@@ -26,7 +26,7 @@ class Where
     {
         $this->alias = $alias;
         $this->values = array_values($where);
-        $this->parameters = array();
+        //$this->parameters = array();
         $this->conditions = array();
         $this->conditions = $this->createNestedConditions($alias, $where);
     }
@@ -105,37 +105,22 @@ class Where
      *
      * @param array \Conditions(s)
      */
-    public function getParametersValues(array $conditions = array())
+    public function getParametersValues(array $conditions = null)
     {
-        // $paramValues = array();
-        //
-        // foreach ($this->values as $value) {
-        //     $paramValues[] = $value;
-        //     // if (is_array($value)) {
-        //     //     foreach ($value as $val) {
-        //     //         $paramValues[] = $val;
-        //     //     }
-        //     // } else {
-        //     //     $paramValues[] = $value;
-        //     // }
-        // }
-        //
-        // return $paramValues;
-        // $parameters = array();
-        // if (empty($conditions)) {
-        //     $conditions = $this->conditions;
-        // }
-        //
-        // foreach ($this->conditions as $condition) {
-        //     if (is_array($condition)) {
-        //
-        //     } else {
-        //         $key = $condition->getParam();
-        //         $parameters[$key] = $condition->getValue();
-        //     }
-        // }
+        $parameters = array();
+        if (null === $conditions) {
+            $conditions = $this->conditions;
+        }
+        
+        foreach ($conditions as $condition) {
+            if ($condition instanceof \Adadgio\DoctrineDQLBundle\DQL\Condition) {
+                $parameters[] = $condition->getValue();
+            } else {
+                $parameters[] = $this->getParametersValues($condition);
+            }
+        }
 
-        // return $parameters;
+        return $parameters;
     }
 
     /**
